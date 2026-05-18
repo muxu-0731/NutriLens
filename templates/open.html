@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLens 进入页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 严格使用你指定的三色渐变背景 */
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgb(239, 150, 166), rgb(195, 210, 162), rgb(102, 194, 140) );
+        }
+
+        /* Logo点击跳转容器 */
+        .logo-link {
+            display: block;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        /* 你的Logo图片，自适应屏幕 */
+        .logo-img {
+            max-width: 85vw;
+            max-height: 85vh;
+            display: block;
+            transition: all 0.2s ease;
+        }
+
+        /* ✅ 大幅增强的边缘高亮闪烁反馈 */
+        .logo-link:hover .logo-img,
+        .logo-link:active .logo-img {
+            /* 轻微放大+亮度提升 */
+            transform: scale(1.08);
+            filter: brightness(1.15);
+            /* 多层叠加的高亮闪烁动画 */
+            animation: super-blink 0.4s infinite alternate;
+        }
+
+        /* 点击时额外的按压反馈 */
+        .logo-link:active {
+            transform: scale(0.98);
+        }
+
+        /* 增强版高亮闪烁动画：三层光晕叠加 */
+        @keyframes super-blink {
+            0% {
+                filter: brightness(1.15) drop-shadow(0 0 15px rgba(255,255,255,0.8)) drop-shadow(0 0 30px rgba(255,255,255,0.6)) drop-shadow(0 0 45px rgba(255,255,255,0.4));
+            }
+
+            100% {
+                filter: brightness(1.25) drop-shadow(0 0 25px rgba(255,255,255,1)) drop-shadow(0 0 50px rgba(255,255,255,0.8)) drop-shadow(0 0 75px rgba(255,255,255,0.6));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 修复1：跳转链接改成Flask路由 /DCSI -->
+    <a href="/DCSI" class="logo-link">
+        <!-- 修复2：图片路径改成Flask静态文件路径 /static/logo.png -->
+        <img src="/static/logo.png" class="logo-img" alt="NutriLens Logo">
+    </a>
+</body>
+</html>
