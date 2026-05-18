@@ -36,10 +36,16 @@ NutriLens/
 ├── model/
 │   └── best.pt                   # 训练完成的YOLOv8食物识别权重文件
 ├── templates/                    # 前端HTML页面文件
-│   ├── open.html                 # 系统首页
-│   ├── DCSI.html                 # 功能主菜单
+│   ├── open.html                 # 系统首页（项目入口）
+│   ├── DCSI.html                 # 功能主菜单（慢病类型选择页）
 │   ├── Diabetes_information_input.html    # 糖尿病用户信息录入页
-│   └── Diabetes_detect_analyse.html       # 糖尿病识别分析页
+│   ├── Diabetes_detect_analyse.html       # 糖尿病菜品识别与分析页
+│   ├── Hyperglycemia_information_input.html # 高血糖用户信息录入页
+│   ├── Hyperglycemia_detect_analyse.html  # 高血糖菜品识别与分析页
+│   ├── Hyperlipidemia_information_input.html # 高血脂用户信息录入页
+│   ├── Hyperlipidemia_detect_analyse.html  # 高血脂菜品识别与分析页
+│   ├── Hypertension_information_input.html # 高血压用户信息录入页
+│   └── Hypertension_detect_analyse.html    # 高血压菜品识别与分析页
 └── README.md                     # 项目说明文档
 
 ```
