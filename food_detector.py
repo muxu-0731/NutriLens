@@ -84,35 +84,88 @@ model = None  # 全局YOLO模型变量，后续加载训练好的权重文件
 # 功能：根据食物营养数据 + 用户健康参数，计算食用等级和推荐食用量
 # 参数：food_nutri - 单种食物的完整营养数据字典
 # 返回：level(食用等级)、portion(推荐食用量)
-def get_food_suggestion(food_nutri):
-    # 提取食物核心营养指标
+def get_food_suggestion(food_nutri, disease):
+    # 提取食物核心营养指标 【完全和你原版一样】
     net_carbs = food_nutri["net_carbs"]
     gl = food_nutri["gl"]
+    fat = food_nutri["fat"]
+    cholesterol = food_nutri["cholesterol"]
+    sodium = food_nutri["sodium"]
     # 提取默认健康参数
     daily_carbs = default_health_params["daily_net_carbs"]
     sugar = default_health_params["fasting_sugar"]
 
-    # 无碳水化合物：无限制食用
-    if net_carbs <= 0:
-        portion = "无限制食用"
-    else:
-        # 计算最大推荐食用克数
-        max_gram = (daily_carbs * 0.2 / net_carbs) * 100
-        portion = f"最大推荐 {int(max_gram)} 克"
+    # ===================== 糖尿病 / 高血糖 =====================
+    if disease in ["diabetes", "hyperglycemia"]:
+        # 无碳水化合物：无限制食用
+        if net_carbs <= 0:
+            portion = "无限制食用"
+        else:
+            # 计算最大推荐食用克数
+            max_gram = (daily_carbs * 0.2 / net_carbs) * 100
+            portion = f"最大推荐 {int(max_gram)} 克"
 
-    # 根据血糖负荷(GL)和净碳水，判定食用安全等级
-    if gl < 10 and net_carbs < 15:
-        level = "SAFE"      # 安全
-    elif gl < 20 and net_carbs < 30:
-        level = "CAUTION"   # 谨慎
-    else:
-        level = "AVOID"     # 避免
+        # 根据血糖负荷(GL)和净碳水，判定食用安全等级
+        if gl < 10 and net_carbs < 15:
+            level = "SAFE"      # 安全
+        elif gl < 20 and net_carbs < 30:
+            level = "CAUTION"   # 谨慎
+        else:
+            level = "AVOID"     # 避免
 
-    # 血糖偏高时，减半食用量
-    if sugar > 7.0:
-        portion = f"血糖偏高，建议减半食用" if net_carbs > 0 else "严格控制摄入"
+        # 血糖偏高时，减半食用量
+        if sugar > 7.0:
+            portion = f"血糖偏高，建议减半食用" if net_carbs > 0 else "严格控制摄入"
+
+    # ===================== 高血脂 =====================
+    elif disease == "hyperlipidemia":
+        if fat <= 0:
+            portion = "无限制食用"
+        else:
+            max_gram = (daily_carbs * 0.2 / fat) * 100
+            portion = f"最大推荐 {int(max_gram)} 克"
+
+        if cholesterol < 100:
+            level = "SAFE"
+        elif cholesterol < 200:
+            level = "CAUTION"
+        else:
+            level = "AVOID"
+
+    # ===================== 高血压 =====================
+    elif disease == "hypertension":
+        if sodium <= 0:
+            portion = "无限制食用"
+        else:
+            max_gram = (daily_carbs * 0.2 / sodium) * 100
+            portion = f"最大推荐 {int(max_gram)} 克"
+
+        if sodium < 200:
+            level = "SAFE"
+        elif sodium < 500:
+            level = "CAUTION"
+        else:
+            level = "AVOID"
+
+    # ===================== 默认 =====================
+    else:
+        if net_carbs <= 0:
+            portion = "无限制食用"
+        else:
+            max_gram = (daily_carbs * 0.2 / net_carbs) * 100
+            portion = f"最大推荐 {int(max_gram)} 克"
+
+        if gl < 10 and net_carbs < 15:
+            level = "SAFE"
+        elif gl < 20 and net_carbs < 30:
+            level = "CAUTION"
+        else:
+            level = "AVOID"
+
+        if sugar > 7.0:
+            portion = f"血糖偏高，建议减半食用" if net_carbs > 0 else "严格控制摄入"
+
     return level, portion
-
 # ==================== 前端页面路由配置 ====================
 # 根路由：项目启动首页(open.html)
 @app.route('/')
@@ -213,7 +266,7 @@ def detect():
         if label in food_db:
             nutri = food_db[label]
             # 调用算法，获取食用等级和推荐量
-            level, portion = get_food_suggestion(nutri)
+            level, portion = get_food_suggestion(nutri,disease)
 
             # 根据病种，匹配对应的饮食建议(tip1/2/3)
             if disease in ["diabetes", "hyperglycemia"]:
