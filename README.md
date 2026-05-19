@@ -64,6 +64,7 @@ pip install flask opencv-python ultralytics -i https://pypi.tuna.tsinghua.edu.cn
 将完整项目文件夹解压至无中文、无空格路径（如 D:\NutriLens）
 确认 model/ 文件夹内存有训练完成的 best.pt 模型权重文件
 确认根目录存在 food_nutrition.json 营养数据库文件
+## 一定要让菜品充满画面的至少80%！！！
 
 运行主程序：
 python food_detector.py
