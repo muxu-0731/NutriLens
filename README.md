@@ -1,73 +1,43 @@
 # NutriLens
 
-NutriLens is a Flask-based food recognition and chronic-disease dietary analysis system built for mobile web scenarios.
+## AI智慧营养视界 / 智能饮食识别与慢病管理系统
 
-It is designed around a real scanning workflow:
+NutriLens 是一个面向移动健康管理场景构建的 AI 智能饮食识别与慢病管理系统，聚焦糖尿病、高血糖、高血脂、高血压等慢性病相关饮食辅助分析需求。项目以食物图像识别、营养映射分析、慢病风险评估和饮食行为追踪为核心，形成了从前端采集、云端识别、个性化分析到结果反馈与记录管理的完整业务闭环。
 
-**WeChat / H5 page -> mobile camera capture -> image upload -> YOLO recognition -> ARK portion analysis -> nutrition and risk feedback**
+本项目已完成从 **PC 端单次识别原型** 向 **手机拍照上传、云端识别、慢病个性化分析、安全克数推荐、饮食记录与周报追踪** 的完整升级，能够更贴近真实移动端健康管理场景，适合作为智能营养分析、慢病饮食辅助、健康管理产品原型与教学展示项目使用。
 
-The current version focuses on four chronic disease scenarios:
+## 项目简介
 
-- Diabetes
-- Hyperglycemia
-- Hyperlipidemia
-- Hypertension
+NutriLens 采用 Flask 构建后端服务，结合 YOLOv8 食物识别能力、本地营养数据库以及 ARK 多模态/文本能力，对用户上传的膳食图片进行识别、分量估算、营养分析与慢病适配性判断。系统支持手机端拍照上传图片，后端完成识别与分析后，向前端返回风险等级、推荐摄入克数、主要风险原因、营养明细及可视化提示，并支持饮食记录、历史追踪、周统计与周报生成。
 
-## Highlights
+项目当前重点覆盖以下慢病饮食管理场景：
 
-- Real mobile photo upload via `POST /detect`
-- YOLOv8 food recognition
-- ARK-based visual portion estimation
-- Disease-specific nutrition and risk analysis
-- Diet record persistence with SQLite
-- Weekly stats and weekly report generation
-- Mobile-first analysis pages with real scan flow
+- 糖尿病饮食分析
+- 高血糖饮食分析
+- 高血脂饮食分析
+- 高血压饮食分析
 
-## Current Workflow
+## 核心功能
 
-1. User opens a disease-specific analysis page on a mobile browser.
-2. User taps the scan button and takes a photo with the phone camera.
-3. Frontend uploads the image to `POST /detect` using `multipart/form-data`.
-4. Backend runs:
-   - image decoding
-   - YOLO recognition
-   - food label mapping
-   - ARK portion estimation
-   - nutrition calculation
-   - disease-specific risk analysis
-5. Frontend renders the recognition result and supports rescan.
+- 支持手机端拍照或上传图片，完成真实饮食场景下的食物识别
+- 基于 YOLOv8 对食物目标进行识别与标签映射
+- 结合 ARK 视觉能力完成餐食分量比例估算
+- 基于 `food_nutrition.json` 进行营养成分换算与克数推算
+- 面向不同慢病场景输出个性化风险等级与饮食建议
+- 返回推荐摄入克数、主要风险因素、风险比值与可视化提示信息
+- 支持饮食记录创建、状态查询、取消、历史查看等记录管理功能
+- 支持每周饮食统计与周报生成，满足持续追踪需求
 
-## Core Capabilities
+## 技术亮点
 
-### 1. Real food detection
+- 完成了从本地摄像头调试模式到移动端真实上传识别流程的升级
+- 实现了“食物识别 + 分量估算 + 营养计算 + 慢病分析 + 记录追踪”的一体化闭环
+- 兼顾实时识别体验与慢病个性化分析逻辑，不仅识别“吃了什么”，还分析“是否适合吃、建议吃多少”
+- 支持按疾病场景输出差异化结果，增强健康建议的针对性
+- 引入周统计与周报能力，使系统从单次识别工具扩展为连续饮食管理辅助系统
+- 后端支持在缺少部分 ARK 能力时进行降级处理，提升项目演示与部署兼容性
 
-- `POST /detect` accepts uploaded images from browsers
-- `GET /detect` is kept as a compatibility/debug mode using `cv2.VideoCapture(0)`
-- Shared frontend scan flow in `static/detect_realtime.js`
-
-### 2. Nutrition and portion analysis
-
-- Food recognition based on YOLOv8
-- Nutrition mapping from `food_nutrition.json`
-- Portion percentage estimated from the uploaded image through ARK
-- Actual grams derived from portion ratio and reference serving size
-
-### 3. Disease-oriented analysis
-
-- Outputs risk levels such as `SAFE`, `CAUTION`, and `AVOID`
-- Returns recommendation grams, risk ratio, main risk reason, and visual hints
-- Preserves the existing nutrition analysis and risk analysis pipeline
-
-### 4. Record and report features
-
-- Create diet records
-- Query record status
-- Cancel diet records
-- View history
-- Generate weekly statistics
-- Generate weekly text reports
-
-## Tech Stack
+## 技术栈
 
 - Python 3.8+
 - Flask
@@ -76,101 +46,105 @@ The current version focuses on four chronic disease scenarios:
 - NumPy
 - Requests
 - SQLite
-- ARK vision/text APIs
+- HTML / CSS / JavaScript
+- ARK Vision / Text API
 
-## Project Structure
+## 项目目录结构
 
 ```text
 NutriLens-pro/
-|- food_detector.py                  # Main backend application
-|- food_nutrition.json               # Local food nutrition database
-|- model/
-|  `- best.pt                        # YOLO model weights
-|- data/
-|  `- nutrilens.db                   # SQLite database
-|- static/
-|  |- detect_realtime.js             # Shared realtime mobile scan script
-|  `- logo.png
-|- templates/
-|  |- open(3).html
-|  |- DCSI(3).html
-|  |- base_info(2).html
-|  |- Diabetes_information_input(4).html
-|  |- Diabetes_detect_analyse(3).html
-|  |- Hyperglycemia_information_input(2).html
-|  |- Hyperglycemia_detect_analyse(2).html
-|  |- Hyperlipidemia_information_input(3).html
-|  |- Hyperlipidemia_detect_analyse(3).html
-|  |- Hypertension_information_input(3).html
-|  `- Hypertension_detect_analyse(3).html
-`- README.md
+├─ food_detector.py                         # Flask 后端主程序
+├─ food_nutrition.json                      # 食物营养数据库
+├─ .env.example                             # 环境变量示例文件
+├─ model/
+│  └─ best.pt                               # YOLO 模型权重文件
+├─ static/
+│  ├─ detect_realtime.js                    # 移动端拍照上传与识别交互脚本
+│  └─ logo.png                              # 项目图形资源
+├─ templates/
+│  ├─ open(3).html
+│  ├─ DCSI(3).html
+│  ├─ base_info(2).html
+│  ├─ Diabetes_information_input(4).html
+│  ├─ Diabetes_detect_analyse(3).html
+│  ├─ Hyperglycemia_information_input(2).html
+│  ├─ Hyperglycemia_detect_analyse(2).html
+│  ├─ Hyperlipidemia_information_input(3).html
+│  ├─ Hyperlipidemia_detect_analyse(3).html
+│  ├─ Hypertension_information_input(3).html
+│  └─ Hypertension_detect_analyse(3).html
+├─ program_mermaid/                         # 流程图与说明素材
+├─ alg_update.docx                          # 算法更新说明文档
+└─ README.md
 ```
 
-## Requirements
+说明：
 
-- Python 3.8 or later
-- A valid YOLO model file at `model/best.pt`
-- A valid food nutrition database file at `food_nutrition.json`
-- Network access for ARK-dependent features such as portion estimation and weekly report generation
+- `data/` 目录为运行过程中自动创建的本地数据目录，通常用于保存 SQLite 数据文件。
+- `.env` 为本地开发配置文件，不应提交到公开仓库。
 
-## Installation
+## 环境变量配置说明
 
-Install dependencies:
+如需本地体验，请先复制 `.env.example` 为 `.env`，再根据自身环境填写所需配置项。请勿将真实密钥提交到 GitHub。
+
+推荐步骤如下：
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell 可使用：
+
+```powershell
+Copy-Item .env.example .env
+```
+
+请在 `.env` 中自主填写以下内容：
+
+```bash
+ARK_API_KEY=your_ark_api_key
+ARK_VISION_URL=https://ark.cn-beijing.volces.com/api/v3/responses
+ARK_VISION_MODEL_ENDPOINT=your_vision_model_endpoint
+ARK_CHAT_URL=https://ark.cn-beijing.volces.com/api/v3/chat/completions
+ARK_TEXT_MODEL_ENDPOINT=your_text_model_endpoint
+```
+
+说明：
+
+- `ARK_API_KEY`：ARK 服务访问密钥
+- `ARK_VISION_MODEL_ENDPOINT`：视觉分析所需模型 Endpoint
+- `ARK_TEXT_MODEL_ENDPOINT`：文本报告生成所需模型 Endpoint
+- `ARK_VISION_URL` 与 `ARK_CHAT_URL`：分别对应视觉与文本能力请求地址
+
+项目默认使用 CPU 运行，以兼容更多本地演示环境。如需额外控制设备，可结合环境变量自行调整。
+
+## 本地运行方式
+
+### 1. 安装依赖
 
 ```bash
 pip install flask opencv-python numpy requests ultralytics
 ```
 
-## Configuration
+### 2. 准备模型与配置
 
-NutriLens now loads configuration in this order:
+- 确认 `model/best.pt` 已存在
+- 确认 `food_nutrition.json` 已存在
+- 按上一节完成 `.env` 配置
 
-1. System environment variables on the server
-2. Local project `.env` file for development
-
-For local development:
-
-1. Copy `.env.example`
-2. Rename the copied file to `.env`
-3. Fill in your own ARK key and endpoint values
-
-The real `.env` file is ignored by Git and should stay local only.
-
-Recommended environment variables:
-
-```bash
-ARK_API_KEY=your_api_key
-ARK_VISION_URL=https://ark.cn-beijing.volces.com/api/v3/responses
-ARK_VISION_MODEL_ENDPOINT=your_vision_endpoint
-ARK_CHAT_URL=https://ark.cn-beijing.volces.com/api/v3/chat/completions
-ARK_TEXT_MODEL_ENDPOINT=your_text_endpoint
-```
-
-Optional:
-
-```bash
-CUDA_VISIBLE_DEVICES=-1
-```
-
-The current backend forces CPU mode by default for broader compatibility.
-
-If ARK vision variables are missing, food detection can still run, but portion estimation falls back to a default value.
-
-If ARK text variables are missing, weekly report generation will be unavailable.
-
-## Run
+### 3. 启动项目
 
 ```bash
 python food_detector.py
 ```
 
-Then open:
+默认启动后可访问：
 
 ```text
 http://127.0.0.1:5000
 ```
 
-## Main Pages
+主要页面入口包括：
 
 - `/`
 - `/DCSI`
@@ -184,124 +158,35 @@ http://127.0.0.1:5000
 - `/Hypertension_information_input`
 - `/Hypertension_detect_analyse`
 
-## API Overview
+## 在线体验地址
 
-### `POST /detect`
+[待填写]
 
-Primary production mode for real mobile scanning.
+## Release 版本说明
 
-Content type:
+### 当前版本特点
 
-```text
-multipart/form-data
-```
+- 已完成从 PC 端单次识别演示到移动端真实拍照上传识别流程的升级
+- 已接入云端分量估算与慢病个性化分析能力
+- 已支持安全克数推荐、饮食记录管理、每周统计与周报追踪
 
-Fields:
+### 版本演进概述
 
-- `image`: uploaded image file
-- `disease`: `diabetes` / `hyperglycemia` / `hyperlipidemia` / `hypertension`
+- `Prototype`：以本地识别与基础建议为主的早期原型
+- `Mobile Upgrade`：完成移动端上传识别与统一前端交互流程
+- `Management Upgrade`：引入慢病分析、推荐克数、饮食记录与周报功能
 
-Example:
+如后续发布正式 Release，可在 GitHub Releases 中补充版本号、变更日志与部署说明。
 
-```bash
-curl -X POST "http://127.0.0.1:5000/detect" \
-  -F "image=@test.jpg" \
-  -F "disease=diabetes"
-```
+## 注意事项与免责声明
 
-### `GET /detect`
+### 注意事项
 
-Compatibility/debug mode that captures from the server camera with `cv2.VideoCapture(0)`.
+- 本项目为研究、教学、展示与原型验证用途，使用前请确认本地模型、依赖与环境变量配置完整
+- `.env`、数据库文件及其他本地运行产物不应提交到公开仓库
+- 若未正确配置 ARK 相关能力，部分分量估算或周报生成功能可能不可用或降级运行
+- 模型识别结果会受到拍摄角度、光照条件、图像清晰度及样本覆盖范围影响
 
-Example:
+### 免责声明
 
-```bash
-curl "http://127.0.0.1:5000/detect?disease=diabetes"
-```
-
-### `POST /api/diet_records`
-
-Create or restore a diet record using recognition data.
-
-### `GET /api/diet_records/status`
-
-Check whether a recognition result has already been recorded.
-
-### `POST /api/diet_records/cancel`
-
-Cancel an existing diet record.
-
-### `GET /api/diet_records/history`
-
-Query paginated history records.
-
-### `GET /api/weekly_stats`
-
-Generate weekly nutrition and risk statistics.
-
-### `POST /api/weekly_report`
-
-Generate a weekly summary report.
-
-## Detection Response Fields
-
-The frontend consumes fields such as:
-
-- `food`
-- `level`
-- `portion`
-- `tip`
-- `visual_tip`
-- `recommendation_grams`
-- `risk_ratio`
-- `main_risk_reason`
-- `nutrition`
-- `analysis`
-- `imgBase64`
-
-## Algorithm Upgrades in the Current Version
-
-Compared with the earliest prototype, the current system has moved beyond simple label-based suggestion logic and now includes:
-
-- real uploaded-image recognition
-- portion percentage estimation
-- actual gram estimation
-- scalable nutrition calculation
-- disease-specific meal-limit logic
-- risk-ratio-based warning evaluation
-- recommendation gram back-calculation
-- weekly aggregation and report generation
-
-## Deployment Notes
-
-- `POST /detect` is the recommended mode for real deployment.
-- `GET /detect` should be treated as local compatibility/debug mode only.
-- SQLite tables are initialized automatically at startup.
-- If ARK services are unavailable, portion estimation or weekly report generation may fail gracefully.
-
-## Recommended Use Cases
-
-- WeChat Official Account H5 pages
-- Mobile diet analysis tools
-- Chronic disease dietary education demos
-- Food recognition and nutrition analysis prototypes
-
-## Roadmap
-
-- Better multi-disease joint evaluation
-- Stronger health-profile participation in realtime analysis
-- Improved internationalization and accessibility
-- OpenAPI documentation
-- Dockerized deployment
-
-## Publishing Advice
-
-Before pushing this project to GitHub:
-
-- keep real secrets only in server environment variables or local `.env`
-- confirm whether model weights and database files should be committed
-- add a proper open-source license if you plan to publish publicly
-
-## License
-
-Add your preferred license before public release.
+本项目提供的是饮食健康管理辅助建议，仅用于健康教育、饮食参考与系统演示，不替代医生诊断、治疗方案或注册营养师提供的个体化处方。用户在面对疾病诊疗、药物调整、特殊人群营养干预等问题时，应以专业医疗机构和持证专业人员意见为准。
