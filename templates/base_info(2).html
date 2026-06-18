@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>个人基础信息 | NutriLens</title>
+    <style>
+        :root {
+            --primary: #165DFF;
+            --text-main: #17324c;
+            --text-muted: rgba(23, 50, 76, 0.72);
+            --panel-bg: rgba(255, 255, 255, 0.92);
+            --panel-soft: rgba(255, 255, 255, 0.76);
+            --border: rgba(22, 93, 255, 0.24);
+            --shadow: 0 20px 48px rgba(22, 93, 255, 0.12);
+            --radius: 26px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        button,
+        .btn-link {
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        button:hover:not(:disabled),
+        .btn-link:hover:not(.disabled):not([aria-disabled="true"]) {
+            background-color: #165DFF;
+            color: #fff;
+        }
+
+        button:active:not(:disabled),
+        .btn-link:active:not(.disabled):not([aria-disabled="true"]) {
+            background-color: #0E42C7;
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+            background: linear-gradient(135deg, rgb(239, 150, 166), rgb(195, 210, 162), rgb(102, 194, 140));
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: calc(16px + var(--safe-top)) 16px calc(20px + var(--safe-bottom));
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .glass {
+            width: min(100%, 720px);
+            margin: 0 auto;
+            background: linear-gradient(180deg, var(--panel-bg), var(--panel-soft));
+            border: 1px solid rgba(255, 255, 255, 0.54);
+            border-radius: var(--radius);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+            padding: 22px 16px 18px;
+        }
+
+        h1 {
+            font-size: 28px;
+            line-height: 1.2;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .btn-voice,
+        .btn-submit,
+        .btn-back,
+        .btn-next,
+        .btn-prev,
+        .choice-chip {
+            min-height: 48px;
+        }
+
+        .btn-voice,
+        .btn-submit,
+        .btn-back,
+        .btn-next,
+        .btn-prev {
+            width: 100%;
+            border-radius: 16px;
+            border: 2px solid var(--primary);
+            background: #fff;
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-voice {
+            margin-bottom: 18px;
+            border-style: dashed;
+        }
+
+        .progress {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .progress-step {
+            padding: 10px 8px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.54);
+            border: 1px solid rgba(22, 93, 255, 0.1);
+        }
+
+        .progress-step.active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #4b86ff);
+            border-color: transparent;
+        }
+
+        .step-card {
+            display: none;
+            animation: fadeSlide 0.26s ease;
+        }
+
+        .step-card.active {
+            display: block;
+        }
+
+        .step-title {
+            font-size: 20px;
+            line-height: 1.3;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field label,
+        .group-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .field small {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: rgba(255, 255, 255, 0.96);
+            outline: none;
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.12);
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .choice-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.84);
+            border: 1.5px solid rgba(22, 93, 255, 0.14);
+            cursor: pointer;
+            transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+
+        .choice-chip input {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+            accent-color: var(--primary);
+        }
+
+        .choice-chip.selected {
+            border-color: var(--primary);
+            background: rgba(22, 93, 255, 0.1);
+        }
+
+        .choice-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .choice-text strong {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .choice-text span {
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .footer-back {
+            margin-top: 12px;
+        }
+
+        .hint-card {
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.56);
+            border: 1px solid rgba(22, 93, 255, 0.14);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+        .error-text {
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #d33b3b;
+            min-height: 20px;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: calc(24px + var(--safe-top)) 24px calc(26px + var(--safe-bottom));
+            }
+
+            .glass {
+                padding: 30px 28px 24px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .subtitle {
+                font-size: 15px;
+                margin-bottom: 22px;
+            }
+
+            .progress-step {
+                font-size: 13px;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px;
+            }
+
+            .choice-grid.dual {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass">
+        <h1>统一基础信息配置</h1>
+        <p class="subtitle">先完成基础资料、健康状况与其他信息配置，提交后再选择需要进入的健康管理类别。</p>
+
+        <button type="button" class="btn-voice" onclick="playVoice()">播放语音指引</button>
+
+        <div class="progress">
+            <div class="progress-step active">基本信息</div>
+            <div class="progress-step">健康状况</div>
+            <div class="progress-step">其他信息</div>
+        </div>
+
+        <form id="baseForm" novalidate>
+            <section class="step-card active" data-step="0">
+                <h2 class="step-title">第一步：基本信息</h2>
+                <p class="step-desc">填写年龄、性别、身高、体重、腰围、活动强度以及妊娠或哺乳状态。</p>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="age">年龄</label>
+                        <input id="age" type="number" value="45" min="1" step="1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="gender">性别</label>
+                        <select id="gender">
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="height">身高（cm）</label>
+                        <input id="height" type="number" value="168" min="1" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="weight">体重（kg）</label>
+                        <input id="weight" type="number" value="68" min="1" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="waist">腰围（cm）</label>
+                        <input id="waist" type="number" value="88" min="1" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="activity">活动强度</label>
+                        <select id="activity">
+                            <option value="low">低</option>
+                            <option value="medium" selected>中</option>
+                            <option value="high">高</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                    <div class="group-label">妊娠 / 哺乳状态</div>
+                    <div class="choice-grid">
+                        <label class="choice-chip selected">
+                            <input type="radio" name="pregnancy_status" value="none" checked>
+                            <span class="choice-text"><strong>无</strong><span>默认按普通成人评估</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="pregnancy_status" value="pregnant">
+                            <span class="choice-text"><strong>妊娠期</strong><span>系统将调整能量估算</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="pregnancy_status" value="lactating">
+                            <span class="choice-text"><strong>哺乳期</strong><span>系统将提高能量估算</span></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="step-card" data-step="1">
+                <h2 class="step-title">第二步：健康状况</h2>
+                <p class="step-desc">可提前多选已确诊或重点管理的病种。后续在病种选择页进入的病种会自动补入本次分析。</p>
+                <div class="choice-grid dual">
+                    <label class="choice-chip">
+                        <input type="checkbox" name="conditions" value="hypertension">
+                        <span class="choice-text"><strong>高血压</strong><span>关注血压、钠与食盐管理</span></span>
+                    </label>
+                    <label class="choice-chip">
+                        <input type="checkbox" name="conditions" value="hyperlipidemia">
+                        <span class="choice-text"><strong>高血脂</strong><span>关注脂肪、胆固醇与总能量</span></span>
+                    </label>
+                    <label class="choice-chip">
+                        <input type="checkbox" name="conditions" value="hyperglycemia">
+                        <span class="choice-text"><strong>高血糖</strong><span>关注净碳水、GL、GI 与 HbA1c</span></span>
+                    </label>
+                    <label class="choice-chip">
+                        <input type="checkbox" name="conditions" value="diabetes">
+                        <span class="choice-text"><strong>糖尿病</strong><span>强化控糖与肾脏负担评估</span></span>
+                    </label>
+                </div>
+                <div class="hint-card">如果暂未勾选病种，也可以先继续。进入具体病种页面后，系统会自动把当前选中病种加入分析条件。</div>
+            </section>
+
+            <section class="step-card" data-step="2">
+                <h2 class="step-title">第三步：其他信息</h2>
+                <p class="step-desc">补充肾功能 eGFR 与需要规避的过敏食物，提交后进入病种选择页。</p>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="egfr">肾功能 eGFR（mL/min/1.73m²）</label>
+                        <input id="egfr" type="number" value="92" step="0.1" inputmode="decimal" enterkeyhint="done" required>
+                        <small>默认参考值 92，可按检查结果修正。</small>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                    <!-- 过敏食物改为自由输入，保留原分组标题与页面视觉规范 -->
+                    <div class="group-label">过敏食物</div>
+                    <input id="allergies_input" type="text" inputmode="text" enterkeyhint="done" placeholder="例如：花生,牛奶,海鲜">
+                    <small id="allergiesHint">多个食物用逗号分隔，例如：花生,牛奶,海鲜</small>
+                </div>
+            </section>
+
+            <div class="error-text" id="errorText"></div>
+
+            <div class="action-row">
+                <button type="button" class="btn-prev" id="prevBtn">上一步</button>
+                <button type="button" class="btn-next" id="nextBtn">下一步</button>
+                <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()" style="display:none;">提交</button>
+            </div>
+
+            <div class="footer-back">
+                <button type="button" class="btn-back" onclick="goBackHome()">返回启动页</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const steps = Array.from(document.querySelectorAll(".step-card"));
+        const progressSteps = Array.from(document.querySelectorAll(".progress-step"));
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const submitBtn = document.getElementById("submitBtn");
+        const errorText = document.getElementById("errorText");
+        const form = document.getElementById("baseForm");
+        let currentStep = 0;
+
+        const stepVoices = [
+            "第一步，请填写年龄、性别、身高、体重、腰围、活动强度以及妊娠或哺乳状态。",
+            "第二步，请勾选您的健康状况。后续进入的病种会自动补入本次分析条件。",
+            "第三步，请填写肾功能 eGFR，并输入需要避开的过敏食物，多个用逗号分隔。"
+        ];
+
+        function pickChineseVoice() {
+            const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+            return voices.find((voice) =>
+                /zh|chinese|xiaoxiao|xiaoyi|tingting|female/i.test((voice.lang || "") + " " + (voice.name || ""))
+            ) || voices.find((voice) => /zh/i.test(voice.lang || "")) || null;
+        }
+
+        function speak(text) {
+            if (!("speechSynthesis" in window) || !text) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN";
+            utterance.rate = 0.9;
+            const voice = pickChineseVoice();
+            if (voice) utterance.voice = voice;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playVoice() {
+            speak(stepVoices[currentStep]);
+        }
+
+        function updateChoiceStates() {
+            document.querySelectorAll(".choice-chip").forEach((chip) => {
+                const input = chip.querySelector("input");
+                chip.classList.toggle("selected", !!input.checked);
+            });
+        }
+
+        function getVisibleInputs(stepIndex) {
+            return Array.from(steps[stepIndex].querySelectorAll('input[type="number"], input[type="text"], textarea, select')).filter((el) => !el.disabled);
+        }
+
+        function setupEnterJump() {
+            steps.forEach((step, stepIndex) => {
+                const inputs = getVisibleInputs(stepIndex);
+                inputs.forEach((input, index) => {
+                    input.addEventListener("keydown", (event) => {
+                        if (event.key !== "Enter") return;
+                        event.preventDefault();
+                        const next = inputs[index + 1];
+                        if (next) {
+                            next.focus();
+                        } else if (stepIndex < steps.length - 1) {
+                            nextStep();
+                        } else {
+                            submitForm();
+                        }
+                    });
+                });
+            });
+        }
+
+        function showStep(index) {
+            currentStep = index;
+            steps.forEach((step, stepIndex) => {
+                step.classList.toggle("active", stepIndex === index);
+            });
+            progressSteps.forEach((step, stepIndex) => {
+                step.classList.toggle("active", stepIndex === index);
+            });
+            prevBtn.style.visibility = index === 0 ? "hidden" : "visible";
+            nextBtn.style.display = index === steps.length - 1 ? "none" : "block";
+            submitBtn.style.display = index === steps.length - 1 ? "block" : "none";
+            errorText.textContent = "";
+            playVoice();
+            const focusTarget = getVisibleInputs(index)[0];
+            if (focusTarget) {
+                setTimeout(() => focusTarget.focus(), 60);
+            }
+        }
+
+        function validateStep(index) {
+            errorText.textContent = "";
+            if (index === 0) {
+                const required = ["age", "height", "weight", "waist"];
+                for (const id of required) {
+                    const input = document.getElementById(id);
+                    if (!input.value || Number(input.value) <= 0) {
+                        errorText.textContent = "请完整填写基本信息中的数值项。";
+                        input.focus();
+                        return false;
+                    }
+                }
+            }
+
+            if (index === 2) {
+                const egfr = Number(document.getElementById("egfr").value);
+                if (!egfr || egfr <= 0) {
+                    errorText.textContent = "请填写有效的肾功能 eGFR。";
+                    document.getElementById("egfr").focus();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function nextStep() {
+            if (!validateStep(currentStep)) return;
+            if (currentStep < steps.length - 1) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function collectValues(name) {
+            if (name === "allergies") {
+                // 自由输入的过敏食物在提交前统一拆分、去空格和去重。
+                const allergiesInput = document.getElementById("allergies_input");
+                if (!allergiesInput) return [];
+                return allergiesInput.value
+                    .replace(/，/g, ",")
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+                    .filter((item, index, array) => array.indexOf(item) === index);
+            }
+            return Array.from(form.querySelectorAll(`input[name="${name}"]:checked`)).map((input) => input.value);
+        }
+
+        function updateAllergiesHint() {
+            // 输入内容不做强制拦截，仅做基础格式提示，避免影响原有提交流程。
+            const allergiesInput = document.getElementById("allergies_input");
+            const allergiesHint = document.getElementById("allergiesHint");
+            if (!allergiesInput || !allergiesHint) return;
+            const rawValue = allergiesInput.value.trim();
+            if (!rawValue) {
+                allergiesHint.textContent = "多个食物用逗号分隔，例如：花生,牛奶,海鲜";
+                return;
+            }
+            if (/[<>`"'{}[\]|\\]/.test(rawValue)) {
+                allergiesHint.textContent = "建议仅输入食物名称并用逗号分隔，尽量避免特殊符号。";
+                return;
+            }
+            allergiesHint.textContent = `已识别 ${collectValues("allergies").length} 项过敏食物。`;
+        }
+
+        function submitForm() {
+            if (!validateStep(currentStep)) return;
+            const payload = {
+                basic: {
+                    age: Number(document.getElementById("age").value),
+                    gender: document.getElementById("gender").value,
+                    height: Number(document.getElementById("height").value),
+                    weight: Number(document.getElementById("weight").value),
+                    waist: Number(document.getElementById("waist").value),
+                    activity: document.getElementById("activity").value,
+                    pregnancy_status: form.querySelector('input[name="pregnancy_status"]:checked').value
+                },
+                conditions: collectValues("conditions"),
+                other: {
+                    egfr: Number(document.getElementById("egfr").value),
+                    allergies: collectValues("allergies")
+                }
+            };
+
+            localStorage.setItem("nutrilens.base.info", JSON.stringify(payload));
+            submitBtn.disabled = true;
+            submitBtn.textContent = "正在提交...";
+            speak("基础信息已保存，正在进入健康管理类别选择页。");
+            setTimeout(() => {
+                window.location.href = "{{ url_for('dcsi_main') }}";
+            }, 900);
+        }
+
+        function goBackHome() {
+            speak("返回启动页。");
+            setTimeout(() => {
+                window.location.href = "{{ url_for('open_main') }}";
+            }, 420);
+        }
+
+        function fillChoiceGroup(name, values) {
+            const selectedValues = Array.isArray(values) ? values : [values];
+            form.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
+                input.checked = selectedValues.includes(input.value);
+            });
+        }
+
+        function hydrateForm() {
+            try {
+                const saved = JSON.parse(localStorage.getItem("nutrilens.base.info") || "{}");
+                const basic = saved.basic || {};
+                const other = saved.other || {};
+                if (basic.age) document.getElementById("age").value = basic.age;
+                if (basic.gender) document.getElementById("gender").value = basic.gender;
+                if (basic.height) document.getElementById("height").value = basic.height;
+                if (basic.weight) document.getElementById("weight").value = basic.weight;
+                if (basic.waist) document.getElementById("waist").value = basic.waist;
+                if (basic.activity) document.getElementById("activity").value = basic.activity;
+                if (basic.pregnancy_status) fillChoiceGroup("pregnancy_status", basic.pregnancy_status);
+                if (other.egfr) document.getElementById("egfr").value = other.egfr;
+                fillChoiceGroup("conditions", saved.conditions || []);
+                document.getElementById("allergies_input").value = Array.isArray(other.allergies) ? other.allergies.join(",") : "";
+            } catch (error) {
+                console.warn("base info hydrate failed", error);
+            }
+        }
+
+        prevBtn.addEventListener("click", prevStep);
+        nextBtn.addEventListener("click", nextStep);
+        form.addEventListener("change", updateChoiceStates);
+        document.getElementById("allergies_input").addEventListener("input", updateAllergiesHint);
+
+        window.onload = function () {
+            hydrateForm();
+            updateChoiceStates();
+            updateAllergiesHint();
+            setupEnterJump();
+            showStep(0);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>糖尿病指标输入 | NutriLens</title>
+    <style>
+        :root {
+            --primary: #165DFF;
+            --text-main: #17324c;
+            --text-muted: rgba(23, 50, 76, 0.72);
+            --panel-bg: rgba(255, 255, 255, 0.92);
+            --panel-soft: rgba(255, 255, 255, 0.76);
+            --border: rgba(22, 93, 255, 0.24);
+            --shadow: 0 20px 48px rgba(22, 93, 255, 0.12);
+            --radius: 26px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --warn-bg: rgba(255, 193, 7, 0.14);
+            --warn-border: rgba(255, 193, 7, 0.32);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        button, .btn-link, .top-entry-link { transition: all 0.2s ease; touch-action: manipulation; }
+        button:hover:not(:disabled), .btn-link:hover:not(.disabled):not([aria-disabled="true"]), .top-entry-link:hover { background-color: #165DFF; color: #fff; }
+        button:active:not(:disabled), .btn-link:active:not(.disabled):not([aria-disabled="true"]), .top-entry-link:active { background-color: #0E42C7; transform: scale(0.98); }
+        button:disabled { cursor: not-allowed; }
+        html, body { min-height: 100%; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+            background: linear-gradient(135deg, rgb(239, 150, 166), rgb(195, 210, 162), rgb(102, 194, 140));
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: calc(72px + var(--safe-top)) 16px calc(20px + var(--safe-bottom));
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .top-entry-bar {
+            position: fixed;
+            top: calc(10px + var(--safe-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: min(calc(100% - 32px), 720px);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            background: #FFFFFF;
+            border: 1px solid #EEEEEE;
+            border-radius: 22px;
+            box-shadow: 0 14px 28px rgba(23, 50, 76, 0.08);
+        }
+
+        .top-entry-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            color: #333333;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .top-entry-link:hover {
+            color: #0066CC;
+            background: #F5F5F5;
+        }
+
+        .glass {
+            width: min(100%, 720px);
+            margin: 0 auto;
+            background: linear-gradient(180deg, var(--panel-bg), var(--panel-soft));
+            border: 1px solid rgba(255, 255, 255, 0.54);
+            border-radius: var(--radius);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+            padding: 22px 16px 18px;
+        }
+
+        h1 { font-size: 28px; line-height: 1.2; color: var(--primary); text-align: center; margin-bottom: 8px; }
+        .subtitle { font-size: 14px; line-height: 1.7; color: var(--text-muted); text-align: center; margin-bottom: 18px; }
+        .btn-voice, .btn-submit, .btn-back { width: 100%; min-height: 48px; border-radius: 16px; border: 2px solid var(--primary); background: #fff; color: var(--primary); font-size: 16px; font-weight: 700; cursor: pointer; }
+        .btn-voice { margin-bottom: 18px; border-style: dashed; }
+        .status-card, .hint-card, .warn-card, .section-card { border-radius: 18px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(22, 93, 255, 0.14); padding: 14px; }
+        .status-card, .hint-card, .warn-card { font-size: 13px; line-height: 1.7; color: var(--text-muted); margin-bottom: 14px; }
+        .warn-card { background: var(--warn-bg); border-color: var(--warn-border); color: #7a5a00; }
+        .section-card + .section-card { margin-top: 14px; }
+        .section-title { font-size: 18px; color: var(--primary); margin-bottom: 8px; }
+        .section-desc { font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 12px; }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field label, .group-label { font-size: 15px; font-weight: 700; color: var(--primary); }
+        .field small { font-size: 12px; color: var(--text-muted); }
+        input[type="number"], select { width: 100%; min-height: 48px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--border); background: rgba(255, 255, 255, 0.96); outline: none; font-size: 15px; color: var(--text-main); }
+        input[type="number"]:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.12); }
+        .choice-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .choice-chip { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; background: rgba(255, 255, 255, 0.84); border: 1.5px solid rgba(22, 93, 255, 0.14); cursor: pointer; transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease; }
+        .choice-chip input { width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--primary); }
+        .choice-chip.selected { border-color: var(--primary); background: rgba(22, 93, 255, 0.1); }
+        .choice-text { display: flex; flex-direction: column; gap: 2px; }
+        .choice-text strong { font-size: 14px; line-height: 1.5; }
+        .choice-text span { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+        .error-text { margin-top: 12px; min-height: 20px; color: #d33b3b; font-size: 13px; line-height: 1.6; }
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+
+        @media (min-width: 768px) {
+            body { display: flex; align-items: center; justify-content: center; padding: calc(88px + var(--safe-top)) 24px calc(26px + var(--safe-bottom)); }
+            .top-entry-bar { width: min(calc(100% - 48px), 720px); }
+            .glass { padding: 30px 28px 24px; }
+            h1 { font-size: 32px; }
+            .subtitle { font-size: 15px; }
+            .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+            .choice-grid.dual { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-entry-bar">
+        <a href="{{ url_for('base_info') }}" class="top-entry-link">个人信息</a>
+    </div>
+    <div class="glass">
+        <h1>糖尿病专属指标</h1>
+        <p class="subtitle">本页仅填写糖尿病专属指标。系统会自动合并统一基础信息后进入检测分析页。</p>
+
+        <button type="button" class="btn-voice" onclick="playVoice()">播放语音指引</button>
+        <div class="status-card" id="baseStatus">正在读取统一基础信息...</div>
+        <div class="warn-card">请优先根据最近一次门诊或居家监测结果填写。低血糖风险、糖尿病肾病和蛋白尿会直接影响推荐食用量。</div>
+
+        <form id="diseaseForm" novalidate>
+            <section class="section-card">
+                <h2 class="section-title">血糖核心指标</h2>
+                <p class="section-desc">请填写空腹血糖、餐后 2 小时血糖以及 HbA1c。</p>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="fasting_glucose">空腹血糖（mmol/L）</label>
+                        <input id="fasting_glucose" type="number" value="7.5" min="0" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="postprandial_glucose">餐后 2 小时血糖（mmol/L）</label>
+                        <input id="postprandial_glucose" type="number" value="11.2" min="0" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                    <div class="field">
+                        <label for="hba1c">HbA1c（%）</label>
+                        <input id="hba1c" type="number" value="7.9" min="0" step="0.1" inputmode="decimal" enterkeyhint="next" required>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <h2 class="section-title">糖尿病风险修正项</h2>
+                <p class="section-desc">这些信息会共同影响净碳水、GL 阈值以及结果页的风险结论。</p>
+
+                <div class="field">
+                    <div class="group-label">低血糖风险</div>
+                    <div class="choice-grid">
+                        <label class="choice-chip selected">
+                            <input type="radio" name="hypoglycemia_risk" value="low" checked>
+                            <span class="choice-text"><strong>低</strong><span>按常规控糖模式评估</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="hypoglycemia_risk" value="medium">
+                            <span class="choice-text"><strong>中</strong><span>建议更均匀分配进食量</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="hypoglycemia_risk" value="high">
+                            <span class="choice-text"><strong>高</strong><span>建议避免空腹快速进食高 GI 食物</span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                    <div class="group-label">降糖药 / 胰岛素类型</div>
+                    <div class="choice-grid dual">
+                        <label class="choice-chip selected">
+                            <input type="radio" name="glucose_medication" value="none" checked>
+                            <span class="choice-text"><strong>未使用</strong><span>按基础风险评估</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="glucose_medication" value="oral">
+                            <span class="choice-text"><strong>口服降糖药</strong><span>关注餐后血糖波动</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="glucose_medication" value="basal_insulin">
+                            <span class="choice-text"><strong>基础胰岛素</strong><span>同步关注低血糖风险</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="glucose_medication" value="multiple_insulin">
+                            <span class="choice-text"><strong>多次胰岛素</strong><span>结果页将更保守给出推荐量</span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                    <div class="group-label">糖尿病肾病情况</div>
+                    <div class="choice-grid">
+                        <label class="choice-chip selected">
+                            <input type="radio" name="diabetic_nephropathy" value="none" checked>
+                            <span class="choice-text"><strong>无</strong><span>按常规控糖模式评估</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="diabetic_nephropathy" value="suspected">
+                            <span class="choice-text"><strong>疑似</strong><span>建议持续结合 eGFR 观察</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="diabetic_nephropathy" value="confirmed">
+                            <span class="choice-text"><strong>已确诊</strong><span>系统将同步收紧控糖负荷</span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:12px;">
+                    <div class="group-label">蛋白尿情况</div>
+                    <div class="choice-grid">
+                        <label class="choice-chip selected">
+                            <input type="radio" name="proteinuria" value="none" checked>
+                            <span class="choice-text"><strong>无</strong><span>按常规负荷评估</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="proteinuria" value="micro">
+                            <span class="choice-text"><strong>微量白蛋白尿</strong><span>建议进一步控制餐次负荷</span></span>
+                        </label>
+                        <label class="choice-chip">
+                            <input type="radio" name="proteinuria" value="overt">
+                            <span class="choice-text"><strong>显性蛋白尿</strong><span>系统将更保守给出推荐量</span></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <div class="hint-card">如需修改年龄、体重、活动强度、eGFR 或多病共存情况，请返回统一基础信息页重新提交。</div>
+            <div class="error-text" id="errorText"></div>
+            <div class="action-row">
+                <button type="button" class="btn-back" onclick="goBack()">返回</button>
+                <button type="button" class="btn-submit" id="submitBtn" onclick="submitForm()">进入系统</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "nutrilens.diabetes.form";
+        const DETAIL_KEY = "diabetes_detail";
+        const RESULT_PAGE = "{{ url_for('diabetes_analyse') }}";
+        const DISEASE_VALUE = "diabetes";
+
+        const form = document.getElementById("diseaseForm");
+        const errorText = document.getElementById("errorText");
+        const submitBtn = document.getElementById("submitBtn");
+        const baseStatus = document.getElementById("baseStatus");
+
+        function pickChineseVoice() {
+            const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+            return voices.find((voice) =>
+                /zh|chinese|xiaoxiao|xiaoyi|tingting|female/i.test((voice.lang || "") + " " + (voice.name || ""))
+            ) || voices.find((voice) => /zh/i.test(voice.lang || "")) || null;
+        }
+
+        function speak(text) {
+            if (!("speechSynthesis" in window) || !text) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN";
+            utterance.rate = 0.9;
+            const voice = pickChineseVoice();
+            if (voice) utterance.voice = voice;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playVoice() {
+            speak("请填写空腹血糖、餐后两小时血糖、糖化血红蛋白、低血糖风险、降糖药或胰岛素类型、糖尿病肾病情况以及蛋白尿情况。");
+        }
+
+        function updateChoiceStates() {
+            document.querySelectorAll(".choice-chip").forEach((chip) => {
+                const input = chip.querySelector("input");
+                chip.classList.toggle("selected", !!input.checked);
+            });
+        }
+
+        function setupEnterJump() {
+            const inputs = Array.from(form.querySelectorAll('input[type="number"], select')).filter((item) => !item.disabled);
+            inputs.forEach((input, index) => {
+                input.addEventListener("keydown", (event) => {
+                    if (event.key !== "Enter") return;
+                    event.preventDefault();
+                    const next = inputs[index + 1];
+                    if (next) next.focus();
+                    else submitForm();
+                });
+            });
+        }
+
+        function readBaseInfo() {
+            try { return JSON.parse(localStorage.getItem("nutrilens.base.info") || "{}"); }
+            catch (error) { return {}; }
+        }
+
+        function uniqueValues(values) {
+            return Array.from(new Set((values || []).filter(Boolean)));
+        }
+
+        function renderBaseStatus() {
+            const baseInfo = readBaseInfo();
+            const basic = baseInfo.basic || {};
+            const other = baseInfo.other || {};
+            if (basic.age) {
+                const conditions = Array.isArray(baseInfo.conditions) && baseInfo.conditions.length
+                    ? `已配置 ${baseInfo.conditions.length} 项健康状况`
+                    : "暂未额外勾选健康状况";
+                baseStatus.textContent = `已读取基础信息：${basic.age} 岁，${basic.gender === "female" ? "女性" : "男性"}，活动强度 ${basic.activity || "未填写"}，eGFR ${other.egfr || "--"}。${conditions}。`;
+            } else {
+                baseStatus.textContent = "未读取到统一基础信息。请先返回填写基础信息，再进入当前病种指标页。";
+            }
+        }
+
+        function validateForm() {
+            errorText.textContent = "";
+            const requiredIds = ["fasting_glucose", "postprandial_glucose", "hba1c"];
+            for (const id of requiredIds) {
+                const input = document.getElementById(id);
+                if (input.value === "" || Number(input.value) < 0) {
+                    errorText.textContent = "请完整填写糖尿病核心指标。";
+                    input.focus();
+                    return false;
+                }
+            }
+            const baseInfo = readBaseInfo();
+            if (!baseInfo.basic || !baseInfo.basic.age) {
+                errorText.textContent = "未找到统一基础信息，请先返回基础信息页完成提交。";
+                return false;
+            }
+            return true;
+        }
+
+        function buildPayload() {
+            const baseInfo = readBaseInfo();
+            const conditions = uniqueValues([...(baseInfo.conditions || []), DISEASE_VALUE]);
+            return {
+                disease: DISEASE_VALUE,
+                basic: baseInfo.basic || {},
+                conditions,
+                other: baseInfo.other || {},
+                [DETAIL_KEY]: {
+                    fasting_glucose: Number(document.getElementById("fasting_glucose").value),
+                    postprandial_glucose: Number(document.getElementById("postprandial_glucose").value),
+                    hba1c: Number(document.getElementById("hba1c").value),
+                    hypoglycemia_risk: form.querySelector('input[name="hypoglycemia_risk"]:checked').value,
+                    glucose_medication: form.querySelector('input[name="glucose_medication"]:checked').value,
+                    diabetic_nephropathy: form.querySelector('input[name="diabetic_nephropathy"]:checked').value,
+                    proteinuria: form.querySelector('input[name="proteinuria"]:checked').value
+                }
+            };
+        }
+
+        function fillChoiceGroup(name, values) {
+            const selectedValues = Array.isArray(values) ? values : [values];
+            form.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
+                input.checked = selectedValues.includes(input.value);
+            });
+        }
+
+        function hydrateExisting() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+                const detail = saved[DETAIL_KEY] || {};
+                if (detail.fasting_glucose !== undefined) document.getElementById("fasting_glucose").value = detail.fasting_glucose;
+                if (detail.postprandial_glucose !== undefined) document.getElementById("postprandial_glucose").value = detail.postprandial_glucose;
+                if (detail.hba1c !== undefined) document.getElementById("hba1c").value = detail.hba1c;
+                if (detail.hypoglycemia_risk) fillChoiceGroup("hypoglycemia_risk", detail.hypoglycemia_risk);
+                if (detail.glucose_medication) fillChoiceGroup("glucose_medication", detail.glucose_medication);
+                if (detail.diabetic_nephropathy) fillChoiceGroup("diabetic_nephropathy", detail.diabetic_nephropathy);
+                if (detail.proteinuria) fillChoiceGroup("proteinuria", detail.proteinuria);
+            } catch (error) {
+                console.warn("diabetes hydrate failed", error);
+            }
+        }
+
+        function submitForm() {
+            if (!validateForm()) return;
+            const payload = buildPayload();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            localStorage.setItem("nutrilens.latest.form", JSON.stringify(payload));
+            submitBtn.disabled = true;
+            submitBtn.textContent = "正在进入...";
+            speak("糖尿病指标已保存，正在进入检测分析页。");
+            setTimeout(() => {
+                window.location.href = RESULT_PAGE;
+            }, 900);
+        }
+
+        function goBack() {
+            speak("返回健康管理类别选择页。");
+            setTimeout(() => {
+                window.location.href = "{{ url_for('dcsi_main') }}";
+            }, 420);
+        }
+
+        form.addEventListener("change", updateChoiceStates);
+
+        window.onload = function () {
+            hydrateExisting();
+            renderBaseStatus();
+            updateChoiceStates();
+            setupEnterJump();
+            playVoice();
+        };
+    </script>
+</body>
+</html>

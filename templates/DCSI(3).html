@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>健康管理类别选择 | NutriLens</title>
+    <style>
+        :root {
+            --primary: #165DFF;
+            --primary-deep: #0e48c7;
+            --text-main: #17324c;
+            --text-soft: rgba(23, 50, 76, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 24px 60px rgba(23, 50, 76, 0.14);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        button,
+        .btn-link,
+        .top-entry-link {
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        button:hover:not(:disabled),
+        .btn-link:hover:not(.disabled):not([aria-disabled="true"]),
+        .top-entry-link:hover {
+            background-color: #165DFF;
+            color: #fff;
+        }
+
+        button:active:not(:disabled),
+        .btn-link:active:not(.disabled):not([aria-disabled="true"]),
+        .top-entry-link:active {
+            background-color: #0E42C7;
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.42), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.24), transparent 26%),
+                linear-gradient(135deg, rgb(239, 150, 166), rgb(195, 210, 162), rgb(102, 194, 140));
+            color: var(--text-main);
+        }
+
+        /* 顶部白色跳转栏：base_info.html 排除，这里直接集成到当前页面 */
+        .top-entry-bar {
+            position: fixed;
+            top: calc(10px + var(--safe-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: min(calc(100% - 32px), 980px);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            background: #FFFFFF;
+            border: 1px solid #EEEEEE;
+            border-radius: 22px;
+            box-shadow: 0 14px 28px rgba(23, 50, 76, 0.08);
+        }
+
+        .top-entry-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            color: #333333;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+            transition: all 0.2s ease;
+        }
+
+        .top-entry-link:hover {
+            color: #0066CC;
+            background: #F5F5F5;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: calc(92px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel {
+            width: min(100%, 980px);
+            padding: 24px 18px;
+            border-radius: 30px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.74));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 7vw, 40px);
+            line-height: 1.15;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-soft);
+        }
+
+        .voice-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .voice-button,
+        .confirm-button,
+        .back-button {
+            min-height: 48px;
+            border-radius: 18px;
+            border: 1.5px solid rgba(22, 93, 255, 0.24);
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--primary);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .voice-button {
+            width: min(100%, 220px);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            min-height: 148px;
+            padding: 20px 18px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.74));
+            box-shadow: 0 18px 40px rgba(23, 50, 76, 0.1);
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(22, 93, 255, 0.36);
+            box-shadow: 0 22px 44px rgba(22, 93, 255, 0.16);
+        }
+
+        .card.selected {
+            border-color: rgba(22, 93, 255, 0.48);
+            background: linear-gradient(180deg, rgba(230, 240, 255, 0.96), rgba(255, 255, 255, 0.78));
+            box-shadow: 0 24px 46px rgba(22, 93, 255, 0.18);
+            transform: scale(1.02);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: auto -24% -26% auto;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(22, 93, 255, 0.14), transparent 70%);
+            pointer-events: none;
+        }
+
+        .icon {
+            width: 58px;
+            height: 58px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            background: rgba(22, 93, 255, 0.12);
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .card h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-soft);
+            max-width: 24em;
+        }
+
+        .footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .confirm-button,
+        .back-button {
+            width: 100%;
+            max-width: 240px;
+            background: #fff;
+            color: var(--primary);
+            border-color: rgba(22, 93, 255, 0.24);
+            box-shadow: 0 16px 34px rgba(22, 93, 255, 0.12);
+        }
+
+        .confirm-button:disabled {
+            background: rgba(225, 229, 236, 0.95);
+            color: rgba(23, 50, 76, 0.4);
+            border-color: rgba(160, 171, 188, 0.28);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .hint-card {
+            margin: 0 auto 18px;
+            max-width: 680px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.64);
+            border: 1px solid rgba(22, 93, 255, 0.12);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-soft);
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .top-entry-bar {
+                width: min(calc(100% - 48px), 980px);
+            }
+
+            .page {
+                padding: calc(98px + var(--safe-top)) 24px calc(30px + var(--safe-bottom));
+            }
+
+            .panel {
+                padding: 34px 32px 30px;
+            }
+
+            .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 18px;
+                margin-bottom: 24px;
+            }
+
+            .card {
+                min-height: 188px;
+                padding: 24px;
+            }
+
+            .subtitle {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-entry-bar">
+        <a href="{{ url_for('base_info') }}" class="top-entry-link">个人信息</a>
+    </div>
+    <main class="page">
+        <section class="panel">
+            <header class="header">
+                <h1>请选择您的健康管理类别</h1>
+                <p class="subtitle">先选择当前要进入的健康管理场景，再点击确认按钮进入对应指标页。</p>
+            </header>
+
+            <div class="hint-card" id="baseInfoHint">系统将沿用您刚刚提交的统一基础信息，并在进入病种指标页后自动合并。</div>
+
+            <div class="voice-row">
+                <button type="button" class="voice-button" id="voiceGuide">播放语音指引</button>
+            </div>
+
+            <section class="grid" aria-label="慢病类别选择">
+                <article class="card" data-page="{{ url_for('hypertension_input') }}" data-label="高血压">
+                    <div class="icon">🩺</div>
+                    <h2>高血压</h2>
+                    <p>关注收缩压、舒张压、血压分级、家庭血压达标情况与盐敏感风险。</p>
+                </article>
+                <article class="card" data-page="{{ url_for('hyperlipidemia_input') }}" data-label="高血脂">
+                    <div class="icon">🫀</div>
+                    <h2>高血脂</h2>
+                    <p>关注 LDL-C、TG、HDL-C、ASCVD 病史、脂肪肝与降脂药信息。</p>
+                </article>
+                <article class="card" data-page="{{ url_for('hyperglycemia_input') }}" data-label="高血糖">
+                    <div class="icon">🩸</div>
+                    <h2>高血糖</h2>
+                    <p>关注空腹血糖、餐后 2 小时血糖、HbA1c、低血糖风险与肾病情况。</p>
+                </article>
+                <article class="card" data-page="{{ url_for('diabetes_input') }}" data-label="糖尿病">
+                    <div class="icon">🩹</div>
+                    <h2>糖尿病</h2>
+                    <p>强化糖尿病肾病、蛋白尿、低血糖风险与用药方案的综合评估。</p>
+                </article>
+            </section>
+
+            <div class="footer">
+                <button type="button" class="confirm-button" id="confirmButton" disabled>确认进入</button>
+                <button type="button" class="back-button" id="backButton">返回基础信息页</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const cards = Array.from(document.querySelectorAll(".card"));
+        const voiceGuide = document.getElementById("voiceGuide");
+        const confirmButton = document.getElementById("confirmButton");
+        const backButton = document.getElementById("backButton");
+        const baseInfoHint = document.getElementById("baseInfoHint");
+        let selectedCard = null;
+
+        function pickChineseVoice() {
+            const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+            return voices.find((voice) =>
+                /zh|chinese|xiaoxiao|xiaoyi|tingting|female/i.test((voice.lang || "") + " " + (voice.name || ""))
+            ) || voices.find((voice) => /zh/i.test(voice.lang || "")) || null;
+        }
+
+        function speak(text) {
+            if (!("speechSynthesis" in window) || !text) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "zh-CN";
+            utterance.rate = 0.9;
+            const voice = pickChineseVoice();
+            if (voice) utterance.voice = voice;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function selectCard(card) {
+            cards.forEach((item) => item.classList.remove("selected"));
+            card.classList.add("selected");
+            selectedCard = {
+                page: card.dataset.page,
+                label: card.dataset.label
+            };
+            confirmButton.disabled = false;
+            speak(`已选择${selectedCard.label}，点击确认按钮即可进入。`);
+        }
+
+        function hydrateBaseInfoHint() {
+            try {
+                const baseInfo = JSON.parse(localStorage.getItem("nutrilens.base.info") || "{}");
+                const basic = baseInfo.basic || {};
+                const conditions = baseInfo.conditions || [];
+                if (basic.age) {
+                    const conditionText = conditions.length ? `已勾选 ${conditions.length} 项健康状况` : "暂未勾选健康状况";
+                    baseInfoHint.textContent = `当前基础信息已保存：${basic.age} 岁，活动强度 ${basic.activity || "未填写"}，${conditionText}。`;
+                }
+            } catch (error) {
+                baseInfoHint.textContent = "未读取到基础信息，建议返回基础信息页重新提交后再选择病种。";
+            }
+        }
+
+        voiceGuide.addEventListener("click", () => {
+            speak("请选择高血压、高血脂、高血糖或糖尿病，选择后点击确认按钮进入对应信息输入页。");
+        });
+
+        cards.forEach((card) => {
+            card.addEventListener("click", () => selectCard(card));
+        });
+
+        confirmButton.addEventListener("click", () => {
+            if (!selectedCard) return;
+            speak(`正在进入${selectedCard.label}信息输入页。`);
+            setTimeout(() => {
+                window.location.href = selectedCard.page;
+            }, 420);
+        });
+
+        backButton.addEventListener("click", () => {
+            speak("返回统一基础信息页。");
+            setTimeout(() => {
+                window.location.href = "{{ url_for('base_info') }}";
+            }, 360);
+        });
+
+        window.addEventListener("load", () => {
+            hydrateBaseInfoHint();
+            speak("请选择您的健康管理类别，选择后点击确认按钮进入系统。");
+        });
+    </script>
+</body>
+</html>

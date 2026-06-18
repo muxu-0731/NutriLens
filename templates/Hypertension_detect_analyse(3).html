@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>高血压检测分析 | NutriLens</title>
+    <style>
+        :root {
+            --primary: #165DFF;
+            --safe: #27AE60;
+            --caution: #FFC107;
+            --avoid: #E74C3C;
+            --text-main: #17324c;
+            --text-muted: rgba(23, 50, 76, 0.72);
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --panel-soft: rgba(255, 255, 255, 0.74);
+            --border: rgba(22, 93, 255, 0.18);
+            --shadow: 0 22px 54px rgba(22, 93, 255, 0.12);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        button,
+        .btn-link,
+        .top-entry-link {
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+        button:hover:not(:disabled),
+        .btn-link:hover:not(.disabled):not([aria-disabled="true"]),
+        .top-entry-link:hover {
+            background-color: #165DFF;
+            color: #fff;
+        }
+        button:active:not(:disabled),
+        .btn-link:active:not(.disabled):not([aria-disabled="true"]),
+        .top-entry-link:active {
+            background-color: #0E42C7;
+            transform: scale(0.98);
+        }
+        button:disabled { cursor: not-allowed; }
+        html, body { min-height: 100%; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+            background: linear-gradient(135deg, rgb(239, 150, 166), rgb(195, 210, 162), rgb(102, 194, 140));
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: calc(72px + var(--safe-top)) 14px calc(96px + var(--safe-bottom));
+            overflow-x: hidden;
+        }
+        .top-entry-bar {
+            position: fixed;
+            top: calc(10px + var(--safe-top));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: min(calc(100% - 28px), 820px);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            background: #FFFFFF;
+            border: 1px solid #EEEEEE;
+            border-radius: 22px;
+            box-shadow: 0 14px 28px rgba(23, 50, 76, 0.08);
+        }
+        .top-entry-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 14px;
+            color: #333333;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        .top-entry-link:hover {
+            color: #0066CC;
+            background: #F5F5F5;
+        }
+        .page {
+            width: min(100%, 820px);
+            margin: 0 auto;
+            display: grid;
+            gap: 14px;
+        }
+        .glass {
+            background: linear-gradient(180deg, var(--panel-bg), var(--panel-soft));
+            border: 1px solid rgba(255, 255, 255, 0.56);
+            border-radius: 24px;
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+            padding: 18px 16px;
+        }
+        .hero-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .eyebrow {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(22, 93, 255, 0.1);
+            color: var(--primary);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        h1 { font-size: 28px; line-height: 1.2; margin-bottom: 8px; color: var(--primary); }
+        .subtitle, .status-text, .reason-text, .tip-list li, .detail-grid div span:last-child {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+        .speak-btn, .detail-toggle, .ghost-btn, .bottom-btn {
+            min-height: 48px;
+            border: 0;
+            border-radius: 16px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: transform 0.16s ease, opacity 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+        .speak-btn:active, .detail-toggle:active, .ghost-btn:active, .bottom-btn:active { transform: scale(0.98); }
+        .ghost-btn {
+            padding: 0 14px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1.5px solid rgba(22, 93, 255, 0.18);
+            color: var(--primary);
+        }
+        .scan-box {
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            border-radius: 20px;
+            background:
+                radial-gradient(circle at center, rgba(22, 93, 255, 0.12), transparent 46%),
+                rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(22, 93, 255, 0.16);
+            display: grid;
+            place-items: center;
+            margin-bottom: 14px;
+        }
+        .scan-box::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(22, 93, 255, 0.12) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        .scan-focus {
+            position: relative;
+            width: 116px;
+            height: 116px;
+            border-radius: 24px;
+            border: 2px solid rgba(22, 93, 255, 0.34);
+            display: grid;
+            place-items: center;
+            text-align: center;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.54);
+        }
+        .scan-line {
+            position: absolute;
+            left: 8%;
+            width: 84%;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, transparent, var(--caution), var(--primary), transparent);
+            box-shadow: 0 0 18px rgba(22, 93, 255, 0.4);
+            opacity: 0;
+        }
+        .scanning .scan-line {
+            opacity: 1;
+            animation: scanMove 1.6s ease-in-out infinite;
+        }
+        @keyframes scanMove {
+            0% { top: 14%; }
+            100% { top: 82%; }
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .status-chip {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(22, 93, 255, 0.12);
+            font-size: 12px;
+            color: var(--primary);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .badge.safe { background: var(--safe); }
+        .badge.caution { background: var(--caution); color: #5f4700; }
+        .badge.avoid { background: var(--avoid); }
+        .result-title {
+            font-size: 26px;
+            line-height: 1.25;
+            margin-bottom: 8px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .metric-box {
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(22, 93, 255, 0.12);
+            padding: 14px;
+        }
+        .metric-box strong {
+            display: block;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .metric-box b {
+            display: block;
+            font-size: 24px;
+            line-height: 1.2;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .metric-box span {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+        .section-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .priority-note {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .priority-list {
+            display: grid;
+            gap: 10px;
+        }
+        .priority-item {
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(22, 93, 255, 0.12);
+            padding: 12px 12px 14px;
+        }
+        .priority-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .priority-top strong { font-size: 15px; }
+        .priority-top span, .priority-sub {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+        .progress-track {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(22, 93, 255, 0.1);
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: inherit;
+        }
+        .progress-fill.safe { background: var(--safe); }
+        .progress-fill.caution { background: var(--caution); }
+        .progress-fill.avoid { background: var(--avoid); }
+        .detail-toggle {
+            width: 100%;
+            background: rgba(22, 93, 255, 0.08);
+            color: var(--primary);
+        }
+        .detail-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.26s ease;
+        }
+        .detail-panel.open {
+            max-height: 600px;
+        }
+        .detail-grid {
+            display: grid;
+            gap: 10px;
+            padding-top: 12px;
+        }
+        .detail-grid div {
+            border-radius: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(22, 93, 255, 0.1);
+        }
+        .detail-grid div strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .tip-list {
+            list-style: none;
+            display: grid;
+            gap: 10px;
+        }
+        .tip-list li {
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(22, 93, 255, 0.1);
+        }
+        .bottom-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 12px 14px calc(12px + var(--safe-bottom));
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(22, 93, 255, 0.12);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .bottom-btn {
+            background: #fff;
+            color: var(--primary);
+        }
+        .bottom-btn:hover:not(:disabled) {
+            background: #165DFF;
+            color: #fff;
+        }
+        .bottom-btn:active:not(:disabled) {
+            background: #0E42C7;
+            color: #fff;
+        }
+        .bottom-btn.secondary {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        @media (min-width: 768px) {
+            .top-entry-bar { width: min(calc(100% - 48px), 820px); }
+            body { padding: calc(88px + var(--safe-top)) 24px calc(108px + var(--safe-bottom)); }
+            .glass { padding: 22px; }
+            .hero-head { align-items: center; }
+            .summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .bottom-bar {
+                left: 50%;
+                transform: translateX(-50%);
+                width: min(100%, 820px);
+                border-radius: 18px 18px 0 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-entry-bar">
+        <a href="{{ url_for('base_info') }}" class="top-entry-link">个人信息</a>
+    </div>
+    <main class="page">
+        <section class="glass">
+            <div class="hero-head">
+                <div>
+                    <h1>高血压检测分析</h1>
+                    <p class="subtitle">系统已根据个人信息估算本餐控压上限，并按风险程度给出推荐食用量。</p>
+                </div>
+                <button class="ghost-btn" type="button" onclick="speakResult()">播报结果</button>
+            </div>
+            <div class="scan-box" id="view-box">
+                <div class="scan-line"></div>
+                <div class="scan-focus" id="foodPreview">准备识别本餐<br>默认样本：宫保鸡丁</div>
+            </div>
+            <div class="status-row">
+                <span class="status-text" id="statusText">页面加载后将自动生成检测分析结果。</span>
+                <span class="status-chip" id="mealMode">标准午餐场景</span>
+            </div>
+        </section>
+
+        <section class="glass">
+            <span class="badge safe" id="riskBadge">SAFE</span>
+            <h2 class="result-title" id="conclusionText">等待扫描结果</h2>
+            <p class="reason-text" id="reasonText">系统将结合钠、食盐当量和热量风险计算推荐食用量。</p>
+            <div class="summary-grid">
+                <div class="metric-box">
+                    <strong>推荐食用量</strong>
+                    <b id="recommendedGrams">-- g</b>
+                    <span id="portionHint">等待计算生活化类比</span>
+                </div>
+                <div class="metric-box">
+                    <strong>当前盘中估算重量</strong>
+                    <b id="plateWeight">-- g</b>
+                    <span id="foodName">等待识别菜品</span>
+                </div>
+                <div class="metric-box">
+                    <strong>主要风险原因</strong>
+                    <b id="riskNutrient">--</b>
+                    <span id="diseaseReminder">等待生成慢病提醒</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass">
+            <h3 class="section-title">第一优先级营养素</h3>
+            <p class="priority-note" id="priorityNote">默认展开。多病共存时，系统会把风险最高的营养素排在最前。</p>
+            <div class="priority-list" id="priorityList"></div>
+        </section>
+
+        <section class="glass">
+            <button class="detail-toggle" type="button" id="detailToggle">查看详情</button>
+            <div class="detail-panel" id="detailPanel">
+                <div class="detail-grid" id="detailGrid"></div>
+            </div>
+        </section>
+
+        <section class="glass">
+            <h3 class="section-title">饮食小贴士</h3>
+            <ul class="tip-list" id="tipList"></ul>
+        </section>
+    </main>
+
+    <div class="bottom-bar">
+        <button class="bottom-btn secondary" type="button" onclick="goBackToConfig()">返回输入页</button>
+        <button class="bottom-btn" type="button" id="rescanBtn" onclick="resetUI()">重新扫描</button>
+    </div>
+    <script>
+        window.PAGE_CONFIG = {
+            diseaseKey: "hypertension",
+            inputPage: "{{ url_for('hypertension_input') }}",
+            introSpeech: "欢迎进入高血压检测分析页，请点击下方按钮开始拍照识别。",
+            backSpeech: "返回高血压信息输入页。",
+            scanPrompt: "点击下方按钮，调用手机摄像头拍照并上传识别。",
+            staticTips: [
+                "优先选择清蒸、白灼、凉拌等少盐烹调方式，减少酱汁和勾芡带来的隐形钠。",
+                "如果本餐钠偏高，下一餐尽量搭配无盐蔬菜、原味豆制品和白水，避免再次叠加。",
+                "家庭血压未达标或存在盐敏感时，即使热量不高，也要优先压低高钠菜品摄入量。"
+            ]
+        };
+    </script>
+    <script src="{{ url_for('static', filename='detect_realtime.js') }}"></script>
+</body>
+</html>
